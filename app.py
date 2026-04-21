@@ -31,7 +31,7 @@ def process():
         detected_lang = transcription["language"]
 
         # 2. 翻譯
-        target_lang = "English" if detected_lang != "en" else "Traditional Chinese"
+        target_lang =  request.form.get("target_lang", "English")
         translated_text = translate(original_text, target_lang)
 
         # 3. 文字轉語音

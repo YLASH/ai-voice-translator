@@ -13,6 +13,7 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      padding: 2rem 1rem;
     }
     .card {
       background: white;
@@ -22,7 +23,34 @@
       max-width: 520px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     }
-    h1 { font-size: 1.4rem; margin-bottom: 1.5rem; color: #111; }
+    h1 { font-size: 1.4rem; margin-bottom: 0.25rem; color: #111; }
+    .subtitle { font-size: 0.85rem; color: #888; margin-bottom: 1.5rem; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+    .tab {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #555;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .tab.active {
+      background: #111;
+      color: white;
+      border-color: #111;
+    }
+
+    /* Upload */
     .upload-area {
       border: 2px dashed #ddd;
       border-radius: 8px;
@@ -35,7 +63,71 @@
     .upload-area:hover { border-color: #888; }
     .upload-area p { color: #888; font-size: 0.9rem; margin-top: 0.5rem; }
     input[type="file"] { display: none; }
-    button {
+    .filename { font-size: 0.85rem; color: #555; margin-bottom: 1rem; }
+
+    /* Record */
+    .record-area {
+      text-align: center;
+      padding: 1.5rem;
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .record-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: none;
+      background: #111;
+      color: white;
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.75rem;
+    }
+    .record-btn.recording {
+      background: #e74c3c;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    .record-status {
+      font-size: 0.85rem;
+      color: #888;
+    }
+    .record-status.active { color: #e74c3c; font-weight: 500; }
+    audio.preview {
+      width: 100%;
+      margin-top: 0.75rem;
+      display: none;
+    }
+
+    /* Lang select */
+    .lang-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+    .lang-row label { font-size: 0.85rem; color: #555; white-space: nowrap; }
+    select {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      background: white;
+      cursor: pointer;
+    }
+    select:focus { outline: none; border-color: #888; }
+
+    /* Translate btn */
+    .translate-btn {
       width: 100%;
       padding: 0.75rem;
       background: #111;
@@ -46,12 +138,11 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    button:hover { background: #333; }
-    button:disabled { background: #aaa; cursor: not-allowed; }
-    .result {
-      margin-top: 1.5rem;
-      display: none;
-    }
+    .translate-btn:hover { background: #333; }
+    .translate-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* Result */
+    .result { margin-top: 1.5rem; display: none; }
     .result-box {
       background: #f9f9f9;
       border-radius: 8px;
@@ -68,75 +159,202 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+    .lang-badge {
+      display: inline-block;
+      background: #f0f0f0;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      color: #555;
+      margin-left: 6px;
+    }
     audio { width: 100%; margin-top: 0.5rem; }
+    
+    .copy-btn {
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      color: #555;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { background: #f0f0f0; border-color: #aaa; }
+    .copy-btn.copied { color: #27ae60; border-color: #27ae60; }
+
     .error { color: #c0392b; font-size: 0.9rem; margin-top: 1rem; }
-    .filename { font-size: 0.85rem; color: #555; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>🎙️ AI Voice Translator</h1>
+    <p class="subtitle">Upload or record audio → transcribe → translate → speech</p>
 
-    <div class="upload-area" onclick="document.getElementById('audioInput').click()">
-      <div style="font-size: 2rem;">📁</div>
-      <p>Click to upload audio file</p>
-      <p>.mp3 / .wav / .m4a</p>
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('upload')">📁 Upload</div>
+      <div class="tab" onclick="switchTab('record')">🎙️ Record</div>
     </div>
-    <input type="file" id="audioInput" accept=".mp3,.wav,.m4a" onchange="showFilename(this)">
-    <div class="filename" id="filename"></div>
 
-    <button onclick="upload()" id="btn" style="margin-top: 1rem;">Translate</button>
+    <!-- Upload Panel -->
+    <div id="uploadPanel">
+      <div class="upload-area" onclick="document.getElementById('audioInput').click()">
+        <div style="font-size: 2rem;">📁</div>
+        <p>Click to upload audio file</p>
+        <p>.mp3 / .wav / .m4a</p>
+      </div>
+      <input type="file" id="audioInput" accept=".mp3,.wav,.m4a" onchange="showFilename(this)">
+      <div class="filename" id="filename"></div>
+    </div>
 
+    <!-- Record Panel -->
+    <div id="recordPanel" style="display:none;">
+      <div class="record-area">
+        <button class="record-btn" id="recordBtn" onclick="toggleRecord()">🎙️</button>
+        <div class="record-status" id="recordStatus">Click to start recording</div>
+        <audio class="preview" id="audioPreview" controls></audio>
+      </div>
+    </div>
+
+    <!-- Language select -->
+    <div class="lang-row">
+      <label>Translate to</label>
+      <select id="targetLang">
+        <option value="English">🇬🇧 English</option>
+        <option value="Traditional Chinese">🇹🇼 Traditional Chinese</option>
+        <option value="Japanese">🇯🇵 Japanese</option>
+        <option value="Korean">🇰🇷 Korean</option>
+        <option value="Spanish">🇪🇸 Spanish</option>
+        <option value="French">🇫🇷 French</option>
+        <option value="German">🇩🇪 German</option>
+        <option value="Thai">🇹🇭 Thai</option>
+      </select>
+    </div>
+
+    <button class="translate-btn" onclick="upload()" id="btn">Translate</button>
+
+    <!-- Result -->
     <div class="result" id="result">
       <div class="result-box">
-        <label>Original</label>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+          <label style="margin:0;">Original <span class="lang-badge" id="detectedLang"></span></label>
+          <button class="copy-btn" onclick="copyText('original')">📋 Copy</button>
+        </div>
         <div id="original"></div>
       </div>
       <div class="result-box">
-        <label>Translated</label>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+          <label style="margin:0;">Translated</label>
+          <button class="copy-btn" onclick="copyText('translated')">📋 Copy</button>
+        </div>
         <div id="translated"></div>
       </div>
       <div class="result-box">
-        <label>Audio Output</label>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <label style="margin:0;">Audio Output <span class="lang-badge">ElevenLabs Voice</span></label>
+          <button class="copy-btn" id="downloadBtn" onclick="downloadAudio()">⬇️ Download</button>
+        </div>
         <audio id="audioPlayer" controls></audio>
       </div>
+    </div>
     </div>
 
     <div class="error" id="error"></div>
   </div>
 
   <script>
+    let currentTab = "upload";
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordedBlob = null;
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll(".tab").forEach((t, i) => {
+        t.classList.toggle("active", (i === 0 && tab === "upload") || (i === 1 && tab === "record"));
+      });
+      document.getElementById("uploadPanel").style.display = tab === "upload" ? "block" : "none";
+      document.getElementById("recordPanel").style.display = tab === "record" ? "block" : "none";
+      document.getElementById("error").textContent = "";
+      document.getElementById("result").style.display = "none";
+    }
+
     function showFilename(input) {
       const name = input.files[0]?.name || "";
       document.getElementById("filename").textContent = name ? `Selected: ${name}` : "";
     }
 
+    async function toggleRecord() {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+        mediaRecorder.onstop = () => {
+          recordedBlob = new Blob(audioChunks, { type: "audio/wav" });
+          const url = URL.createObjectURL(recordedBlob);
+          const preview = document.getElementById("audioPreview");
+          preview.src = url;
+          preview.style.display = "block";
+          document.getElementById("recordBtn").textContent = "🎙️";
+          document.getElementById("recordBtn").classList.remove("recording");
+          document.getElementById("recordStatus").textContent = "Recording saved. Ready to translate.";
+          document.getElementById("recordStatus").classList.remove("active");
+          stream.getTracks().forEach(t => t.stop());
+        };
+
+        mediaRecorder.start();
+        document.getElementById("recordBtn").textContent = "⏹️";
+        document.getElementById("recordBtn").classList.add("recording");
+        document.getElementById("recordStatus").textContent = "Recording... click to stop";
+        document.getElementById("recordStatus").classList.add("active");
+
+      } catch (err) {
+        document.getElementById("error").textContent = "Microphone access denied. Please allow microphone permission.";
+      }
+    }
+
     async function upload() {
-      const fileInput = document.getElementById("audioInput");
       const btn = document.getElementById("btn");
       const errorDiv = document.getElementById("error");
       const resultDiv = document.getElementById("result");
+      const targetLang = document.getElementById("targetLang").value;
 
       errorDiv.textContent = "";
       resultDiv.style.display = "none";
 
-      if (!fileInput.files[0]) {
-        errorDiv.textContent = "Please select an audio file first.";
-        return;
+      const formData = new FormData();
+      formData.append("target_lang", targetLang);
+
+      if (currentTab === "upload") {
+        const fileInput = document.getElementById("audioInput");
+        if (!fileInput.files[0]) {
+          errorDiv.textContent = "Please select an audio file first.";
+          return;
+        }
+        formData.append("audio", fileInput.files[0]);
+      } else {
+        if (!recordedBlob) {
+          errorDiv.textContent = "Please record audio first.";
+          return;
+        }
+        formData.append("audio", recordedBlob, "recording.wav");
       }
 
       btn.disabled = true;
       btn.textContent = "Processing...";
 
-      const formData = new FormData();
-      formData.append("audio", fileInput.files[0]);
-
       try {
-        const res = await fetch("/process", {
-          method: "POST",
-          body: formData
-        });
-
+        const res = await fetch("/process", { method: "POST", body: formData });
         const data = await res.json();
 
         if (data.error) {
@@ -144,7 +362,9 @@
         } else {
           document.getElementById("original").textContent = data.original;
           document.getElementById("translated").textContent = data.translated;
+          document.getElementById("detectedLang").textContent = data.detected_language;
           document.getElementById("audioPlayer").src = data.audio_url;
+          currentAudioUrl = data.audio_url;
           resultDiv.style.display = "block";
         }
       } catch (err) {
@@ -154,6 +374,28 @@
         btn.textContent = "Translate";
       }
     }
+    let currentAudioUrl = "";
+
+    function copyText(id) {
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        btn.textContent = "✅ Copied";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "📋 Copy";
+          btn.classList.remove("copied");
+        }, 2000);
+      });
+    }
+    function downloadAudio() {
+      if (!currentAudioUrl) return;
+      const a = document.createElement("a");
+      a.href = currentAudioUrl;
+      a.download = "translated_audio.mp3";
+      a.click();
+    }
+    
   </script>
 </body>
 </html>
