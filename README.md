@@ -20,7 +20,7 @@ Built with OpenAI Whisper, GPT-4o-mini, and ElevenLabs TTS.
 ---
 
 ## 🏗️ Architecture
-
+```
 Audio Input (Upload / Browser Recording)
 ↓
 Speech-to-Text (OpenAI Whisper)
@@ -30,7 +30,7 @@ Translation (GPT-4o-mini)
 Text-to-Speech (ElevenLabs)
 ↓
 Audio Output
-
+```
 ---
 
 ## 🛠️ Tech Stack
@@ -81,7 +81,7 @@ Open `http://localhost:5000`
 ---
 
 ## 📂 Project Structure
-
+```
 ai-voice-translator/
 ├── utils/
 │   ├── transcribe.py     # Whisper STT
@@ -93,7 +93,7 @@ ai-voice-translator/
 ├── app.py                # Flask API
 ├── .env                  # API keys (not committed)
 └── README.md
-
+```
 
 ---
 
